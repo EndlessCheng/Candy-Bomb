@@ -1,22 +1,20 @@
 package com.endless.android.candybomb;
 
-import android.graphics.Paint;
-
 public class Candy {
-	private Paint mCandyPaint;
+	private int mCandyPaintId;
 	private boolean mVisiable;
 
-	public Candy(Paint candyPaint) {
-		mCandyPaint = candyPaint;
+	public Candy(int candyPaint) {
+		mCandyPaintId = candyPaint;
 		mVisiable = true;
 	}
 
-	public Paint getCandyPaint() {
-		return mCandyPaint;
+	public int getCandyPaintId() {
+		return mCandyPaintId;
 	}
 
-	public void setCandyPaint(Paint candyPaint) {
-		mCandyPaint = candyPaint;
+	public void setCandyPaintId(int candyPaint) {
+		mCandyPaintId = candyPaint;
 	}
 
 	public boolean isVisiable() {

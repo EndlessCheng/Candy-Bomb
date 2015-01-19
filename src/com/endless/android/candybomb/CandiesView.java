@@ -26,17 +26,24 @@ public class CandiesView extends View {
     private static final float CANDY_DIAMETER = CANDY_RADIUS * 2.0f;
     private static final float CANDY_SPACING = 2.0f;
 
-    private static final int[][] DIR = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+    private static final int[][] DIRS = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+
+    private static final int LEVELS_NUMBER = 4;
 
     private float mPaddingLeft = getResources().getDimension(R.dimen.activity_horizontal_margin);
     private float mPaddingTop = getResources().getDimension(R.dimen.activity_vertical_margin);
 
     private Paint mBackgroundPaint;
+    private Paint mCandyPaint[];
 
     private Candy[][] mCandies = new Candy[ROWS_NUMBER][COLUMNS_NUMBER];
 
     private int mLevel;
     private int mNowColorsNumber;
+    private int mLeftCandies;
+    private int mLeftBombs;
+    private int mFinalScore;
+    private int mLevelScore;
 
     public CandiesView(Context context) {
         this(context, null);
@@ -47,11 +54,10 @@ public class CandiesView extends View {
 
         mBackgroundPaint = new Paint();
         mBackgroundPaint.setColor(0xfff8efe0); // off-white
-
-        Paint candyPaint[] = new Paint[COLORS_NUMBER];
+        mCandyPaint = new Paint[COLORS_NUMBER];
         for (int i = 0; i < COLORS_NUMBER; ++i) {
-            candyPaint[i] = new Paint();
-            candyPaint[i].setColor(COLORS_ARRAY[i]);
+            mCandyPaint[i] = new Paint();
+            mCandyPaint[i].setColor(COLORS_ARRAY[i]);
         }
 
         int[] randomArray = new int[CANDIES_NUMBER];
@@ -61,11 +67,14 @@ public class CandiesView extends View {
         shuffleArray(randomArray);
 
         mLevel = 1;
-        mNowColorsNumber = 3;
+        mNowColorsNumber = mLevel + 2;
+        mLeftCandies = CANDIES_NUMBER;
+        mLeftBombs = mNowColorsNumber - mLevel / LEVELS_NUMBER;
+        if (mLeftBombs < 0) mLeftBombs = 0;
 
         for (int i = 0; i < ROWS_NUMBER; ++i) {
             for (int j = 0; j < COLUMNS_NUMBER; ++j) {
-                mCandies[i][j] = new Candy(candyPaint[randomArray[i * 10 + j] % mNowColorsNumber]);
+                mCandies[i][j] = new Candy(randomArray[i * 10 + j] % mNowColorsNumber);
             }
         }
     }
@@ -84,15 +93,20 @@ public class CandiesView extends View {
     protected void onDraw(Canvas canvas) {
         canvas.drawPaint(mBackgroundPaint);
 
-        for (int i = 0; i < ROWS_NUMBER; ++i) {
-            for (int j = 0; j < COLUMNS_NUMBER; ++j) {
-                if (mCandies[i][j].isVisiable()) {
-                    canvas.drawCircle(
-                            mPaddingLeft + (CANDY_DIAMETER + CANDY_SPACING) * j,
-                            mPaddingTop + (CANDY_DIAMETER + CANDY_SPACING) * i,
-                            CANDY_RADIUS, mCandies[i][j].getCandyPaint());
+        if (mLeftCandies > 0) {
+            for (int i = 0; i < ROWS_NUMBER; ++i) {
+                for (int j = 0; j < COLUMNS_NUMBER; ++j) {
+                    if (mCandies[i][j].isVisiable()) {
+                        canvas.drawCircle(
+                                mPaddingLeft + (CANDY_DIAMETER + CANDY_SPACING) * j,
+                                mPaddingTop + (CANDY_DIAMETER + CANDY_SPACING) * i,
+                                CANDY_RADIUS, mCandyPaint[mCandies[i][j].getCandyPaintId()]);
+                    }
                 }
             }
+        } else // go to next level
+        {
+            updateFinalScore();
         }
     }
 
@@ -119,6 +133,12 @@ public class CandiesView extends View {
 //        Log.i(TAG, "column: " + column);
 
         int removeCandiesNumber = removeCandy(raw, column);
+        if (removeCandiesNumber == 1 && mLeftBombs == 0) {
+            mCandies[raw][column].setVisiable(true);
+            return;
+        }
+        mLeftCandies -= removeCandiesNumber;
+        if (removeCandiesNumber == 1) --mLeftBombs;
         updateScore(removeCandiesNumber);
         tidyCandies();
     }
@@ -126,24 +146,24 @@ public class CandiesView extends View {
     private int removeCandy(int raw, int column) {
         mCandies[raw][column].setVisiable(false);
         int count = 1;
-        for (int i = 0; i < DIR.length; ++i) {
-            int x = raw + DIR[i][0];
-            int y = column + DIR[i][1];
+        for (int[] dir : DIRS) {
+            int x = raw + dir[0];
+            int y = column + dir[1];
             if (x >= 0 && x < ROWS_NUMBER && y >= 0 && y < COLUMNS_NUMBER && mCandies[x][y].isVisiable()
-                    && mCandies[x][y].getCandyPaint() == mCandies[raw][column].getCandyPaint()) {
+                    && mCandies[x][y].getCandyPaintId() == mCandies[raw][column].getCandyPaintId()) {
                 count += removeCandy(x, y);
             }
         }
         return count;
     }
 
-    /**
-     * interact with score view
-     *
-     * @param removeCandiesNumber
-     */
     private void updateScore(int removeCandiesNumber) {
-        Log.i(TAG, "add score: " + (removeCandiesNumber * 50));
+        Log.i(TAG, "add score: " + (50 * removeCandiesNumber * removeCandiesNumber));
+        mLevelScore += 50 * removeCandiesNumber * removeCandiesNumber;
+    }
+
+    private void updateFinalScore() {
+
     }
 
     /**
@@ -160,7 +180,7 @@ public class CandiesView extends View {
                 }
             }
             for (int i = 0; i < cnt; ++i) {
-                mCandies[ROWS_NUMBER - 1 - i][j].setCandyPaint(mCandies[movePos[i]][j].getCandyPaint());
+                mCandies[ROWS_NUMBER - 1 - i][j].setCandyPaintId(mCandies[movePos[i]][j].getCandyPaintId());
                 mCandies[ROWS_NUMBER - 1 - i][j].setVisiable(true);
             }
             for (int i = cnt; i < ROWS_NUMBER; ++i) {
@@ -184,7 +204,7 @@ public class CandiesView extends View {
 
     private void moveColumn(int dist, int src) {
         for (int i = 0; i < ROWS_NUMBER; ++i) {
-            mCandies[i][dist].setCandyPaint(mCandies[i][src].getCandyPaint());
+            mCandies[i][dist].setCandyPaintId(mCandies[i][src].getCandyPaintId());
             mCandies[i][dist].setVisiable((mCandies[i][src].isVisiable()));
             mCandies[i][src].setVisiable(false);
         }
