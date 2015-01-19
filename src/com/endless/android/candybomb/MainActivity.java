@@ -1,4 +1,6 @@
-package com.endless.android.candy_bomb;
+package com.endless.android.candybomb;
+
+import com.endless.android.candybomb.R;
 
 import android.os.Bundle;
 import android.app.Activity;
