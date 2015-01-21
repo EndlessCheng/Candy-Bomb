@@ -67,6 +67,10 @@ public class CandiesView extends View {
             mCandyPaint[i].setColor(COLORS_ARRAY[i]);
         }
 
+        initGame();
+    }
+
+    private void initGame() {
         mLevel = 0;
         mFinalScore = 0;
         generateLevel();
@@ -147,6 +151,10 @@ public class CandiesView extends View {
         int removeCandiesNumber = removeCandy(raw, column);
         if (removeCandiesNumber == 1 && mLeftBombs == 0) {
             mCandies[raw][column].setVisiable(true);
+            if (isGameOver()) {
+                updateFinalScore();
+                initGame();
+            }
             return;
         }
         mLeftCandies -= removeCandiesNumber;
@@ -155,21 +163,42 @@ public class CandiesView extends View {
         tidyCandies();
     }
 
-    private int removeCandy(int raw, int column) {
-//        Log.i(TAG, "raw: " + raw);
+    private int removeCandy(int row, int column) {
+//        Log.i(TAG, "row: " + row);
 //        Log.i(TAG, "column: " + column);
 
-        mCandies[raw][column].setVisiable(false);
+        mCandies[row][column].setVisiable(false);
         int count = 1;
         for (int[] dir : DIRS) {
-            int x = raw + dir[0];
+            int x = row + dir[0];
             int y = column + dir[1];
             if (x >= 0 && x < ROWS_NUMBER && y >= 0 && y < COLUMNS_NUMBER && mCandies[x][y].isVisiable()
-                    && mCandies[x][y].getCandyPaintId() == mCandies[raw][column].getCandyPaintId()) {
+                    && mCandies[x][y].getCandyPaintId() == mCandies[row][column].getCandyPaintId()) {
                 count += removeCandy(x, y);
             }
         }
         return count;
+    }
+
+    private boolean isGameOver() {
+        for (int i = 0; i < ROWS_NUMBER; ++i) {
+            for (int j = 0; j < COLUMNS_NUMBER; ++j) {
+                if (mCandies[i][j].isVisiable() && isNeighborSame(i, j)) return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isNeighborSame(int row, int column) {
+        for (int[] dir : DIRS) {
+            int x = row + dir[0];
+            int y = column + dir[1];
+            if (x >= 0 && x < ROWS_NUMBER && y >= 0 && y < COLUMNS_NUMBER && mCandies[x][y].isVisiable()
+                    && mCandies[x][y].getCandyPaintId() == mCandies[row][column].getCandyPaintId()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void updateLevelScore(int removeCandiesNumber) {

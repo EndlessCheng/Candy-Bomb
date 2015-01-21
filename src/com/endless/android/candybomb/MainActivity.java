@@ -16,6 +16,7 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		mTextView = (TextView)findViewById(R.id.hello_world_text_view);
 		mCandiesView = (CandiesView)findViewById(R.id.candies_view);
+		mCandiesView.
 	}
 
 	@Override
