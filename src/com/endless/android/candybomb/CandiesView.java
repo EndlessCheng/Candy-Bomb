@@ -6,8 +6,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.util.Random;
 
@@ -52,6 +55,8 @@ public class CandiesView extends View {
     private int mFinalScore;
     private int mLevelScore;
 
+    private TextView mTextView;
+
     public CandiesView(Context context) {
         this(context, null);
     }
@@ -66,6 +71,13 @@ public class CandiesView extends View {
             mCandyPaint[i] = new Paint();
             mCandyPaint[i].setColor(COLORS_ARRAY[i]);
         }
+
+
+//        LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//        inflater.inflate(R.layout.activity_main, this, true);
+//        inflate(R.layout.activity_main)
+//        mTextView = (TextView) findViewById(R.id.hello_world_text_view);
+      //  Log.i(TAG, "" + (mTextView == null));
 
         initGame();
     }
@@ -106,7 +118,7 @@ public class CandiesView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.i(TAG, "left candies: " + mLeftCandies);
+       // Log.i(TAG, "left candies: " + mLeftCandies);
         if (mLeftCandies == 0) {
             updateFinalScore();
             generateLevel();
@@ -259,5 +271,9 @@ public class CandiesView extends View {
             mCandies[i][dist].setVisiable((mCandies[i][src].isVisiable()));
             mCandies[i][src].setVisiable(false);
         }
+    }
+
+    public int getLevelScore(){
+        return mLevelScore;
     }
 }
