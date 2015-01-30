@@ -31,7 +31,6 @@ public class MainActivity extends Activity implements View.OnTouchListener {
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-//        Log.i(TAG, "%%%%%%%%%");
         mTextView.setText("" + mCandiesView.getLevelScore());
         return false;
     }
